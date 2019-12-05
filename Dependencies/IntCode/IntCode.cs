@@ -14,11 +14,51 @@ namespace AdventOfCode.Dependencies.IntCode
 
         public void Execute(List<int> codes)
         {
+            var temp = codes.ToList();
+            var addr = 0;
+
+            if (!temp.Any()) return;
+            Reset();
+
+            while (true)
+            {
+                var operation = ReadOpCode(temp[addr]);
+                if (operation.Operator == IntCodeOperator.Exit) break;
+
+                switch (operation.Operator)
+                {
+                    case IntCodeOperator.Add:
+                    case IntCodeOperator.Multiply:
+                        Handle(operation, codes, addr);
+                        break;
+                    case IntCodeOperator.Input:
+                    case IntCodeOperator.Output:
+                    default:
+                        throw new Exception("Unrecognizable opcode.");
+                }
+
+                addr += GetOffset(operation.Operator);
+            }
+        }
+
+        void Handle(IntCodeOperation operation, List<int> codes, int addr)
+        {
+            var op1 = codes[addr + 1];
+            var op2 = codes[addr + 2];
+
+            if (operation.ParameterA == IntCodeParamMode.Immediate) op1 = codes[op1];
+            if (operation.ParameterB == IntCodeParamMode.Immediate) op2 = codes[op2];
+
+            var result = operation.Operator == IntCodeOperator.Multiply ? op1 * op2 : op1 + op2;
+            
+            if (operation.ParameterC == IntCodeParamMode.Immediate) 
+                codes[addr + 3] = result;
+            else codes[codes[addr + 3]] = result;
         }
 
         void Reset() => Output = 0;
 
-        OperatorInfo ReadOpCode(int opCode)
+        IntCodeOperation ReadOpCode(int opCode)
         {
             var parser = new int[4];
             var opCodeStr = opCode.ToString().PadLeft(5);
@@ -33,7 +73,7 @@ namespace AdventOfCode.Dependencies.IntCode
                 parser[parser.Length - 1 - i] = int.Parse(data);
             }
 
-            return new OperatorInfo(
+            return new IntCodeOperation(
                 (IntCodeOperator)parser[0], 
                 (IntCodeParamMode)parser[1],                  
                 (IntCodeParamMode)parser[2], 
@@ -50,13 +90,13 @@ namespace AdventOfCode.Dependencies.IntCode
                 case IntCodeOperator.Input:
                 case IntCodeOperator.Output:
                     return 2;
-                default:;
+                default:
                     return 1;
             }
         }
     }
 
-    public struct OperatorInfo
+    public struct IntCodeOperation
     {
         public IntCodeOperator Operator { get; private set; }
 
@@ -66,7 +106,7 @@ namespace AdventOfCode.Dependencies.IntCode
 
         public IntCodeParamMode ParameterC { get; private set; }
 
-        internal OperatorInfo(
+        internal IntCodeOperation(
             IntCodeOperator oper, 
             IntCodeParamMode paramA = IntCodeParamMode.Position, 
             IntCodeParamMode paramB = IntCodeParamMode.Position, 
