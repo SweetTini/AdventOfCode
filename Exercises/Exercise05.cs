@@ -5,7 +5,7 @@ namespace AdventOfCode.Exercises
 {
     public class Exercise05 : IExercise
     {
-        public string Inputs => string.Empty
+        public string Inputs => string.Empty;
 
         public int ProblemOne()
         {
