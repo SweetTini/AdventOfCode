@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AdventOfCode.Exercises;
+using System;
 
 namespace AdventOfCode
 {
@@ -10,6 +7,12 @@ namespace AdventOfCode
     {
         static void Main(string[] args)
         {
+            var exercise = new Exercise04();
+
+            Console.WriteLine("EXERCISE #4:");
+            Console.WriteLine($"Problem #1 = {exercise.ProblemOne()}");
+            Console.WriteLine($"Problem #2 = {exercise.ProblemTwo()}");
+            Console.ReadLine();
         }
     }
 }
