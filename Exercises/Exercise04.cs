@@ -91,6 +91,10 @@ namespace AdventOfCode.Exercises
             return true;
         }
 
-        bool HasAdjacentPair(string input) => HasPairs(input) && FindPairs(input).Min(x => x.Length) == 2;
+        bool HasAdjacentPair(string input)
+        {
+            var pairs = FindPairs(input);
+            return pairs.Any() && pairs.Min(x => x.Length) == 2;
+        }
     }
 }
