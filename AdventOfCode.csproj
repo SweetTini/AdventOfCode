@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dependencies\IntCode\IntCode.cs" />
     <Compile Include="Dependencies\Vector.cs" />
     <Compile Include="Exercises\Exercise02.cs" />
     <Compile Include="Exercises\Exercise01.cs" />
