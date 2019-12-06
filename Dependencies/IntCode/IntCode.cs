@@ -29,7 +29,7 @@ namespace AdventOfCode.Dependencies.IntCode
                 {
                     case IntCodeOperator.Add:
                     case IntCodeOperator.Multiply:
-                        Handle(operation, codes, addr);
+                        Handle(operation, temp, addr);
                         break;
                     case IntCodeOperator.Input:
                     case IntCodeOperator.Output:
@@ -39,6 +39,8 @@ namespace AdventOfCode.Dependencies.IntCode
 
                 addr += GetOffset(operation.Operator);
             }
+
+            Output = temp[0];
         }
 
         void Handle(IntCodeOperation operation, List<int> codes, int addr)
@@ -46,14 +48,14 @@ namespace AdventOfCode.Dependencies.IntCode
             var op1 = codes[addr + 1];
             var op2 = codes[addr + 2];
 
-            if (operation.ParameterA == IntCodeParamMode.Immediate) op1 = codes[op1];
-            if (operation.ParameterB == IntCodeParamMode.Immediate) op2 = codes[op2];
+            if (operation.ParameterA == IntCodeParamMode.Position) op1 = codes[op1];
+            if (operation.ParameterB == IntCodeParamMode.Position) op2 = codes[op2];
 
             var result = operation.Operator == IntCodeOperator.Multiply ? op1 * op2 : op1 + op2;
-            
-            if (operation.ParameterC == IntCodeParamMode.Immediate) 
-                codes[addr + 3] = result;
-            else codes[codes[addr + 3]] = result;
+
+            if (operation.ParameterC == IntCodeParamMode.Position)
+                codes[codes[addr + 3]] = result;
+            else codes[addr + 3] = result;
         }
 
         void Reset() => Output = 0;
@@ -61,7 +63,7 @@ namespace AdventOfCode.Dependencies.IntCode
         IntCodeOperation ReadOpCode(int opCode)
         {
             var parser = new int[4];
-            var opCodeStr = opCode.ToString().PadLeft(5);
+            var opCodeStr = opCode.ToString().PadLeft(5, '0');
             var isFirst = true;
 
             for (int i = opCodeStr.Length - 2; i > -1; i--)
@@ -71,6 +73,7 @@ namespace AdventOfCode.Dependencies.IntCode
                     : opCodeStr[i].ToString();
 
                 parser[parser.Length - 1 - i] = int.Parse(data);
+                isFirst = false;
             }
 
             return new IntCodeOperation(

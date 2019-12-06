@@ -1,4 +1,5 @@
 ﻿using AdventOfCode.Dependencies;
+using AdventOfCode.Dependencies.IntCode;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -38,33 +39,14 @@ namespace AdventOfCode.Exercises
 
         int RunIntCode(int noun, int verb)
         {
-            const int perStep = 4;
             var codes = Codes.ToList();
 
             codes[1] = noun;
             codes[2] = verb;
 
-            for (int i = 0; i < codes.Count / perStep; i++)
-            {
-                var offset = i * perStep;
-                var opCode = codes[offset + 0];
-                if (opCode == 99) break;
-
-                int result;
-                var op1 = codes[codes[offset + 1]];
-                var op2 = codes[codes[offset + 2]];
-
-                switch (opCode)
-                {
-                    case 1: result = op1 + op2; break;
-                    case 2: result = op1 * op2; break;
-                    default: result = 0; break;
-                }
-
-                codes[codes[offset + 3]] = result;
-            }
-
-            return codes[0];
+            var intCode = new IntCode();
+            intCode.Execute(codes);
+            return intCode.Output;
         }
     }
 }
