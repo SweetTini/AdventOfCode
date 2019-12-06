@@ -45,8 +45,7 @@ namespace AdventOfCode.Exercises
             codes[2] = verb;
 
             var intCode = new IntCode();
-            intCode.Execute(codes);
-            return intCode.Output;
+            return intCode.Execute(codes);
         }
     }
 }

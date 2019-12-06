@@ -1,4 +1,5 @@
 ﻿using AdventOfCode.Dependencies;
+using AdventOfCode.Dependencies.IntCode;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,12 +35,16 @@ namespace AdventOfCode.Exercises
 
         public int ProblemOne()
         {
-            throw new NotImplementedException();
+            var intCode = new IntCode();
+            intCode.Execute(Codes);
+            return intCode.Output;
         }
 
         public int ProblemTwo()
         {
-            throw new NotImplementedException();
+            var intCode = new IntCode();
+            intCode.Execute(Codes);
+            return intCode.Output;
         }
     }
 }

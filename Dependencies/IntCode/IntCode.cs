@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AdventOfCode.Dependencies.IntCode
 {
@@ -12,16 +10,19 @@ namespace AdventOfCode.Dependencies.IntCode
 
         public IntCode() { }
 
-        public void Execute(List<int> codes)
+        public int Execute(List<int> codes)
         {
             var temp = codes.ToList();
             var addr = 0;
+            bool canStep;
 
-            if (!temp.Any()) return;
+            if (!temp.Any()) return -1;
             Reset();
 
             while (true)
             {
+                canStep = true;
+
                 var operation = ReadOpCode(temp[addr]);
                 if (operation.Operator == IntCodeOperator.Exit) break;
 
@@ -29,21 +30,31 @@ namespace AdventOfCode.Dependencies.IntCode
                 {
                     case IntCodeOperator.Add:
                     case IntCodeOperator.Multiply:
-                        Handle(operation, temp, addr);
+                        Calculate(operation, temp, addr);
                         break;
                     case IntCodeOperator.Input:
                     case IntCodeOperator.Output:
+                        HandleResponse(operation, temp, addr);
+                        break;
+                    case IntCodeOperator.JumpIfTrue:
+                    case IntCodeOperator.JumpIfFalse:
+                        canStep = GotoCheck(operation, temp, ref addr);
+                        break;
+                    case IntCodeOperator.LessThan:
+                    case IntCodeOperator.Equals:
+                        Compare(operation, temp, addr);
+                        break;
                     default:
                         throw new Exception("Unrecognizable opcode.");
                 }
 
-                addr += GetOffset(operation.Operator);
+                if (canStep) addr += GetOffset(operation.Operator);
             }
 
-            Output = temp[0];
+            return temp[0];
         }
 
-        void Handle(IntCodeOperation operation, List<int> codes, int addr)
+        void Calculate(IntCodeOperation operation, List<int> codes, int addr)
         {
             var op1 = codes[addr + 1];
             var op2 = codes[addr + 2];
@@ -56,6 +67,60 @@ namespace AdventOfCode.Dependencies.IntCode
             if (operation.ParameterC == IntCodeParamMode.Position)
                 codes[codes[addr + 3]] = result;
             else codes[addr + 3] = result;
+        }
+
+        void HandleResponse(IntCodeOperation operation, List<int> codes, int addr)
+        {
+            var memAddr = codes[addr + 1];
+            if (operation.ParameterA == IntCodeParamMode.Position) memAddr = codes[memAddr];
+            var memAddrHex = memAddr.ToString("X").PadLeft(6, '0');
+
+            if (operation.Operator == IntCodeOperator.Input)
+            {
+                Console.Write($"Input  -> Addr. 0x{memAddrHex}: ");
+                if (operation.ParameterA == IntCodeParamMode.Position)
+                    codes[codes[addr + 1]] = int.Parse(Console.ReadLine());
+                else codes[memAddr] = int.Parse(Console.ReadLine());
+            }
+            else
+            {
+                Output = memAddr;
+                Console.WriteLine($"Output -> Addr. 0x{memAddrHex}: {Output}");
+            }
+        }
+
+        bool GotoCheck(IntCodeOperation operation, List<int> codes, ref int addr)
+        {
+            var op = codes[addr + 1];
+            var nextAddr = codes[addr + 2];
+
+            if (operation.ParameterA == IntCodeParamMode.Position) op = codes[op];
+            if (operation.ParameterB == IntCodeParamMode.Position) nextAddr = codes[nextAddr];
+
+            var canJump = operation.Operator == IntCodeOperator.JumpIfFalse ? op == 0 : op != 0;
+            if (canJump)
+            {
+                addr = nextAddr;
+                return false;
+            }
+
+            return true;
+        }
+
+        void Compare(IntCodeOperation operation, List<int> codes, int addr)
+        {
+            var op1 = codes[addr + 1];
+            var op2 = codes[addr + 2];
+
+            if (operation.ParameterA == IntCodeParamMode.Position) op1 = codes[op1];
+            if (operation.ParameterB == IntCodeParamMode.Position) op2 = codes[op2];
+
+            var result = operation.Operator == IntCodeOperator.LessThan ? op1 < op2 : op1 == op2;
+            var resultAsNum = Convert.ToInt32(result);
+
+            if (operation.ParameterC == IntCodeParamMode.Position)
+                codes[codes[addr + 3]] = resultAsNum;
+            else codes[addr + 3] = resultAsNum;
         }
 
         void Reset() => Output = 0;
@@ -89,7 +154,12 @@ namespace AdventOfCode.Dependencies.IntCode
             {
                 case IntCodeOperator.Add:
                 case IntCodeOperator.Multiply:
+                case IntCodeOperator.LessThan:
+                case IntCodeOperator.Equals:
                     return 4;
+                case IntCodeOperator.JumpIfTrue:
+                case IntCodeOperator.JumpIfFalse:
+                    return 3;
                 case IntCodeOperator.Input:
                 case IntCodeOperator.Output:
                     return 2;
@@ -129,6 +199,10 @@ namespace AdventOfCode.Dependencies.IntCode
         Multiply = 2,
         Input = 3,
         Output = 4,
+        JumpIfTrue = 5,
+        JumpIfFalse = 6,
+        LessThan = 7,
+        Equals = 8,
         Exit = 99
     }
 
