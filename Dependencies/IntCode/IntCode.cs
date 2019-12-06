@@ -73,14 +73,14 @@ namespace AdventOfCode.Dependencies.IntCode
         {
             var memAddr = codes[addr + 1];
             if (operation.ParameterA == IntCodeParamMode.Position) memAddr = codes[memAddr];
-            var memAddrHex = memAddr.ToString("X").PadLeft(6, '0');
+            var memAddrHex = memAddr.ToString("X").PadLeft(8, '0');
 
             if (operation.Operator == IntCodeOperator.Input)
             {
                 Console.Write($"Input  -> Addr. 0x{memAddrHex}: ");
                 if (operation.ParameterA == IntCodeParamMode.Position)
                     codes[codes[addr + 1]] = int.Parse(Console.ReadLine());
-                else codes[memAddr] = int.Parse(Console.ReadLine());
+                else codes[addr + 1] = int.Parse(Console.ReadLine());
             }
             else
             {
