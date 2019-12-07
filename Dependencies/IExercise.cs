@@ -2,7 +2,7 @@
 {
     public interface IExercise
     {
-        string Inputs { get; }
+        string FileName { get; }
 
         int ProblemOne();
 

@@ -5,15 +5,20 @@ using System.Linq;
 
 namespace AdventOfCode.Exercises
 {
-    public class Exercise04 : IExercise
+    public class Exercise04 : Exercise
     {
-        public string Inputs => string.Empty;
+        public override string FileName => "Exercise04";
 
-        int Lowest => 156218;
+        int Lowest => int.Parse(Inputs.Split('-')[0]);
 
-        int Highest => 652527;
+        int Highest => int.Parse(Inputs.Split('-')[1]);
 
-        public int ProblemOne()
+        public Exercise04()
+            : base()
+        {
+        }
+
+        public override int ProblemOne()
         {
             var result = 0;
             var rules = SetUpRules(IsValidPassword, HasPairs, IsEachDigitIncreasing);
@@ -25,7 +30,7 @@ namespace AdventOfCode.Exercises
             return result;
         }
 
-        public int ProblemTwo()
+        public override int ProblemTwo()
         {
             var result = 0;
             var rules = SetUpRules(IsValidPassword, HasAdjacentPair, IsEachDigitIncreasing);
