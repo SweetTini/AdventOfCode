@@ -26,7 +26,7 @@ namespace AdventOfCode.Exercises
         public override int ProblemTwo()
         {
             var image = GetImage(ColorBits, 25, 6);
-            ProcessImage(image, 25, 6);
+            DrawImage(image, 25, 6);
             return 0;
         }
 
@@ -40,7 +40,7 @@ namespace AdventOfCode.Exercises
                 .ToList();
         }
 
-        void ProcessImage(List<int[]> image, int width, int height)
+        void DrawImage(List<int[]> image, int width, int height)
         {
             var area = width * height;
 
