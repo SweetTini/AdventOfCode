@@ -26,7 +26,7 @@ namespace AdventOfCode.Exercises
         public override int ProblemTwo()
         {
             var signals = GetSignalSequences(true);
-            var result = signals.Select(CheckThrustersByFeedbackLoop).Max(); ;
+            var result = signals.Select(CheckThrustersByFeedbackLoop).Max();
             return result;
         }
 
