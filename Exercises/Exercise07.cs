@@ -25,18 +25,21 @@ namespace AdventOfCode.Exercises
 
         public override int ProblemTwo()
         {
-            return 0;
+            var signals = GetSignalSequences(true);
+            var result = signals.Select(CheckThrustersByFeedbackLoop).Max(); ;
+            return result;
         }
 
-        List<string> GetSignalSequences()
+        List<string> GetSignalSequences(bool canOffset = false)
         {
             return Enumerable.Range(0, 44444)
                 .Select(x =>
                 {
                     var valueAsString = x.ToString().PadLeft(5, '0');
                     var result = string.Empty;
+                    var offset = canOffset ? 5 : 0;
                     for (int i = 0; i < valueAsString.Length; i++)
-                        result += (int.Parse(valueAsString[i].ToString()) % 5).ToString();
+                        result += ((int.Parse(valueAsString[i].ToString()) % 5) + offset).ToString();
                     return result;
                 })
                 .Distinct()
@@ -55,6 +58,40 @@ namespace AdventOfCode.Exercises
                 intCode.SetInputs(signal, output);
                 intCode.Execute(Instructions);
                 output = intCode.Output;
+            }
+
+            return output;
+        }
+
+        int CheckThrustersByFeedbackLoop(string signalPhase)
+        {
+            var intCodes = new IntCode[signalPhase.Length];
+            var output = 0;
+            var index = 0;
+
+            while (true)
+            {
+                if (intCodes[index] == null)
+                    intCodes[index] = new IntCode();
+
+                var signal = int.Parse(signalPhase[index].ToString());
+                var intCode = intCodes[index];
+
+                if (intCode.IsPaused)
+                {
+                    intCode.SetInputs(output);
+                    intCode.Resume();
+                }
+                else
+                {
+                    intCode.SetInputs(signal, output);
+                    intCode.Execute(Instructions);
+                }
+
+                output = intCode.Output;
+
+                if (intCodes.Where(x => x != null).All(x => !x.IsPaused)) break;
+                else index = (++index) % signalPhase.Length;
             }
 
             return output;

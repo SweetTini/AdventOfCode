@@ -7,8 +7,12 @@ namespace AdventOfCode.Dependencies.IntCode
     public class IntCode
     {
         Queue<int> _inputs;
+        List<int> _codes;
+        int _address;
 
-        public int Output { get; private set; } = -1;
+        public int Output { get; private set; }
+
+        public bool IsPaused { get; private set; }
 
         public IntCode()
         {
@@ -21,78 +25,105 @@ namespace AdventOfCode.Dependencies.IntCode
             inputs.ToList().ForEach(x => _inputs.Enqueue(x));
         }
 
-        public int Execute(List<int> instructions)
+        public int Execute(List<int> codes)
         {
-            var temp = instructions.ToList();
-            var addr = 0;
-            bool canStep;
-
-            if (!temp.Any()) return -1;
+            _codes = codes.ToList();
+            if (!_codes.Any())
+                return int.MinValue;
             Reset();
+
+            return Execute();
+        }
+
+        int Execute()
+        {
+            bool canStep;
 
             while (true)
             {
                 canStep = true;
 
-                var operation = ReadOpCode(temp[addr]);
-                if (operation.Operator == IntCodeOperator.Exit) break;
+                var operation = ReadOpCode(_codes[_address]);
+                if (IsPaused || operation.Operator == IntCodeOperator.Exit)
+                {
+                    if (operation.Operator == IntCodeOperator.Exit)
+                    {
+                        _inputs.Clear();
+                        IsPaused = false;
+                    }
+
+                    break;
+                }
 
                 switch (operation.Operator)
                 {
                     case IntCodeOperator.Add:
                     case IntCodeOperator.Multiply:
-                        Calculate(operation, temp, addr);
+                        Calculate(operation);
                         break;
                     case IntCodeOperator.Input:
                     case IntCodeOperator.Output:
-                        HandleResponse(operation, temp, addr);
+                        HandleResponse(operation);
                         break;
                     case IntCodeOperator.JumpIfTrue:
                     case IntCodeOperator.JumpIfFalse:
-                        canStep = GotoCheck(operation, temp, ref addr);
+                        canStep = GotoCheck(operation);
                         break;
                     case IntCodeOperator.LessThan:
                     case IntCodeOperator.Equals:
-                        Compare(operation, temp, addr);
+                        Compare(operation);
                         break;
                     default:
                         throw new Exception("Unrecognizable opcode.");
                 }
 
-                if (canStep) addr += GetOffset(operation.Operator);
+                if (!IsPaused && canStep) _address += GetOffset(operation.Operator);
             }
 
-            return temp[0];
+            return IsPaused ? int.MinValue : _codes[0];
         }
 
-        void Calculate(IntCodeOperation operation, List<int> codes, int addr)
+        public int Resume()
         {
-            var op1 = codes[addr + 1];
-            var op2 = codes[addr + 2];
+            if (!IsPaused) return int.MinValue;
+            IsPaused = false;
+            return Execute();
+        }
 
-            if (operation.ParameterA == IntCodeParamMode.Position) op1 = codes[op1];
-            if (operation.ParameterB == IntCodeParamMode.Position) op2 = codes[op2];
+        void Calculate(IntCodeOperation operation)
+        {
+            var op1 = _codes[_address + 1];
+            var op2 = _codes[_address + 2];
+
+            if (operation.ParameterA == IntCodeParamMode.Position) op1 = _codes[op1];
+            if (operation.ParameterB == IntCodeParamMode.Position) op2 = _codes[op2];
 
             var result = operation.Operator == IntCodeOperator.Multiply ? op1 * op2 : op1 + op2;
 
             if (operation.ParameterC == IntCodeParamMode.Position)
-                codes[codes[addr + 3]] = result;
-            else codes[addr + 3] = result;
+                _codes[_codes[_address + 3]] = result;
+            else _codes[_address + 3] = result;
         }
 
-        void HandleResponse(IntCodeOperation operation, List<int> codes, int addr)
+        void HandleResponse(IntCodeOperation operation)
         {
-            var memAddr = codes[addr + 1];
-            if (operation.ParameterA == IntCodeParamMode.Position) memAddr = codes[memAddr];
+            var memAddr = _codes[_address + 1];
+            if (operation.ParameterA == IntCodeParamMode.Position) memAddr = _codes[memAddr];
             var memAddrHex = memAddr.ToString("X").PadLeft(8, '0');
 
             if (operation.Operator == IntCodeOperator.Input)
             {
                 if (_inputs.Any())
+                {
                     if (operation.ParameterA == IntCodeParamMode.Position)
-                        codes[codes[addr + 1]] = _inputs.Dequeue();
-                    else codes[addr + 1] = _inputs.Dequeue();
-                else throw new Exception("No inputs provided.");
+                        _codes[_codes[_address + 1]] = _inputs.Dequeue();
+                    else _codes[_address + 1] = _inputs.Dequeue();
+                }
+                else
+                {
+                    IsPaused = true;
+                    return;
+                }
             }
             else
             {
@@ -100,41 +131,46 @@ namespace AdventOfCode.Dependencies.IntCode
             }
         }
 
-        bool GotoCheck(IntCodeOperation operation, List<int> codes, ref int addr)
+        bool GotoCheck(IntCodeOperation operation)
         {
-            var op = codes[addr + 1];
-            var nextAddr = codes[addr + 2];
+            var op = _codes[_address + 1];
+            var nextAddr = _codes[_address + 2];
 
-            if (operation.ParameterA == IntCodeParamMode.Position) op = codes[op];
-            if (operation.ParameterB == IntCodeParamMode.Position) nextAddr = codes[nextAddr];
+            if (operation.ParameterA == IntCodeParamMode.Position) op = _codes[op];
+            if (operation.ParameterB == IntCodeParamMode.Position) nextAddr = _codes[nextAddr];
 
             var canJump = operation.Operator == IntCodeOperator.JumpIfFalse ? op == 0 : op != 0;
             if (canJump)
             {
-                addr = nextAddr;
+                _address = nextAddr;
                 return false;
             }
 
             return true;
         }
 
-        void Compare(IntCodeOperation operation, List<int> codes, int addr)
+        void Compare(IntCodeOperation operation)
         {
-            var op1 = codes[addr + 1];
-            var op2 = codes[addr + 2];
+            var op1 = _codes[_address + 1];
+            var op2 = _codes[_address + 2];
 
-            if (operation.ParameterA == IntCodeParamMode.Position) op1 = codes[op1];
-            if (operation.ParameterB == IntCodeParamMode.Position) op2 = codes[op2];
+            if (operation.ParameterA == IntCodeParamMode.Position) op1 = _codes[op1];
+            if (operation.ParameterB == IntCodeParamMode.Position) op2 = _codes[op2];
 
             var result = operation.Operator == IntCodeOperator.LessThan ? op1 < op2 : op1 == op2;
             var resultAsNum = Convert.ToInt32(result);
 
             if (operation.ParameterC == IntCodeParamMode.Position)
-                codes[codes[addr + 3]] = resultAsNum;
-            else codes[addr + 3] = resultAsNum;
+                _codes[_codes[_address + 3]] = resultAsNum;
+            else _codes[_address + 3] = resultAsNum;
         }
 
-        void Reset() => Output = 0;
+        void Reset()
+        {
+            _address = 0;
+            Output = 0;
+            IsPaused = false;
+        }
 
         IntCodeOperation ReadOpCode(int opCode)
         {
