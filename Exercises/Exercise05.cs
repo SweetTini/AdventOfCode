@@ -9,7 +9,7 @@ namespace AdventOfCode.Exercises
     {
         public override string FileName => "Exercise05";
 
-        List<int> Codes => Inputs.Split(',').Select(x => int.Parse(x)).ToList();
+        List<int> Instructions => Inputs.Split(',').Select(x => int.Parse(x)).ToList();
 
         public Exercise05()
             : base()
@@ -19,14 +19,16 @@ namespace AdventOfCode.Exercises
         public override int ProblemOne()
         {
             var intCode = new IntCode();
-            intCode.Execute(Codes);
+            intCode.SetInputs(1);
+            intCode.Execute(Instructions);
             return intCode.Output;
         }
 
         public override int ProblemTwo()
         {
             var intCode = new IntCode();
-            intCode.Execute(Codes);
+            intCode.SetInputs(5);
+            intCode.Execute(Instructions);
             return intCode.Output;
         }
     }

@@ -9,7 +9,7 @@ namespace AdventOfCode.Exercises
     {
         public override string FileName => "Exercise02";
 
-        List<int> Codes => Inputs.Split(',').Select(x => int.Parse(x)).ToList();
+        List<int> Instructions => Inputs.Split(',').Select(x => int.Parse(x)).ToList();
 
         public Exercise02()
             : base()
@@ -41,13 +41,13 @@ namespace AdventOfCode.Exercises
 
         int RunIntCode(int noun, int verb)
         {
-            var codes = Codes.ToList();
+            var instructions = Instructions.ToList();
 
-            codes[1] = noun;
-            codes[2] = verb;
+            instructions[1] = noun;
+            instructions[2] = verb;
 
             var intCode = new IntCode();
-            return intCode.Execute(codes);
+            return intCode.Execute(instructions);
         }
     }
 }

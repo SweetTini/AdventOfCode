@@ -6,13 +6,24 @@ namespace AdventOfCode.Dependencies.IntCode
 {
     public class IntCode
     {
+        Queue<int> _inputs;
+
         public int Output { get; private set; } = -1;
 
-        public IntCode() { }
-
-        public int Execute(List<int> codes)
+        public IntCode()
         {
-            var temp = codes.ToList();
+            _inputs = new Queue<int>();
+        }
+
+        public void SetInputs(params int[] inputs)
+        {
+            _inputs.Clear();
+            inputs.ToList().ForEach(x => _inputs.Enqueue(x));
+        }
+
+        public int Execute(List<int> instructions)
+        {
+            var temp = instructions.ToList();
             var addr = 0;
             bool canStep;
 
@@ -77,15 +88,15 @@ namespace AdventOfCode.Dependencies.IntCode
 
             if (operation.Operator == IntCodeOperator.Input)
             {
-                Console.Write($"Input  -> Addr. 0x{memAddrHex}: ");
-                if (operation.ParameterA == IntCodeParamMode.Position)
-                    codes[codes[addr + 1]] = int.Parse(Console.ReadLine());
-                else codes[addr + 1] = int.Parse(Console.ReadLine());
+                if (_inputs.Any())
+                    if (operation.ParameterA == IntCodeParamMode.Position)
+                        codes[codes[addr + 1]] = _inputs.Dequeue();
+                    else codes[addr + 1] = _inputs.Dequeue();
+                else throw new Exception("No inputs provided.");
             }
             else
             {
                 Output = memAddr;
-                Console.WriteLine($"Output -> Addr. 0x{memAddrHex}: {Output}");
             }
         }
 
