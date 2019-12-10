@@ -130,21 +130,19 @@ namespace AdventOfCode.Dependencies.IntCode
 
         void SetMemory(IntCodeParamMode paramMode, long address, long value)
         {
-            long realAddr;
-
             switch (paramMode)
             {
                 default:
                 case IntCodeParamMode.Position:
-                    realAddr = _codes[address];
-                    _codes[realAddr] = value;
+                    address = _codes[address];
+                    _codes[address] = value;
                     break;
                 case IntCodeParamMode.Immediate:
                     _codes[address] = value;
                     break;
                 case IntCodeParamMode.Relative:
-                    realAddr = _codes[address];
-                    _codes[_base + realAddr] = value;
+                    address = _codes[address];
+                    _codes[_base + address] = value;
                     break;
             };
         }
