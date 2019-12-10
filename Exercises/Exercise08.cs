@@ -69,7 +69,7 @@ namespace AdventOfCode.Exercises
 
             Console.BackgroundColor = bgColor;
             Console.ForegroundColor = fgColor;
-            Console.Write(colorBit);
+            Console.Write(colorBit.ToString().PadLeft(2, '0'));
             Console.BackgroundColor = lastBgColor;
             Console.ForegroundColor = lastFgColor;
         }
