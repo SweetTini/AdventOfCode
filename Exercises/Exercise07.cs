@@ -16,18 +16,18 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var signals = GetSignalSequences();
             var result = signals.Select(CheckThrusters).Max();
-            return result;
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var signals = GetSignalSequences(true);
             var result = signals.Select(CheckThrustersByFeedbackLoop).Max();
-            return result;
+            return result.ToString();
         }
 
         List<string> GetSignalSequences(bool canOffset = false)
@@ -57,7 +57,7 @@ namespace AdventOfCode.Exercises
                 var signal = int.Parse(signalPhase[i].ToString());
                 intCode.SetInputs(signal, output);
                 intCode.Execute(Instructions);
-                output = intCode.Output;
+                output = (int)intCode.Outputs.Last();
             }
 
             return output;
@@ -88,7 +88,7 @@ namespace AdventOfCode.Exercises
                     intCode.Execute(Instructions);
                 }
 
-                output = intCode.Output;
+                output = (int)intCode.Outputs.Last();
 
                 if (intCodes.Where(x => x != null).All(x => !x.IsPaused)) break;
                 else index = (++index) % signalPhase.Length;

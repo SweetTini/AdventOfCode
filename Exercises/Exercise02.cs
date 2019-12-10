@@ -16,11 +16,11 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne() => RunIntCode(12, 2);
+        public override string ProblemOne() => RunIntCode(12, 2).ToString();
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
-            const int expected = 19690720;
+            const long expected = 19690720;
             var result = 0;
 
             for (int i = 0; i < 100 * 100; i++)
@@ -36,10 +36,10 @@ namespace AdventOfCode.Exercises
                 }
             }
 
-            return result;
+            return result.ToString();
         }
 
-        int RunIntCode(int noun, int verb)
+        long RunIntCode(int noun, int verb)
         {
             var instructions = Instructions.ToList();
 

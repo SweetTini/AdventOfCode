@@ -16,20 +16,24 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var intCode = new IntCode();
             intCode.SetInputs(1);
             intCode.Execute(Instructions);
-            return intCode.Output;
+
+            var result = intCode.Outputs.Last();
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var intCode = new IntCode();
             intCode.SetInputs(5);
             intCode.Execute(Instructions);
-            return intCode.Output;
+
+            var result = intCode.Outputs.Last();
+            return result.ToString();
         }
     }
 }

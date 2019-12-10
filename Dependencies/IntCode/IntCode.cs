@@ -1,41 +1,53 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace AdventOfCode.Dependencies.IntCode
 {
     public class IntCode
     {
-        Queue<int> _inputs;
-        List<int> _codes;
-        int _address;
+        Queue<long> _inputs;
+        List<long> _outputs;
+        long[] _codes;
+        long _address, _base;
 
-        public int Output { get; private set; }
+        public long MemorySize { get; private set; }
+
+        public ReadOnlyCollection<long> Outputs { get; private set; }
 
         public bool IsPaused { get; private set; }
 
-        public IntCode()
+        public IntCode(long memorySize = 2048)
         {
-            _inputs = new Queue<int>();
+            _inputs = new Queue<long>();
+            _outputs = new List<long>();
+
+            MemorySize = memorySize;
+            Outputs = new ReadOnlyCollection<long>(_outputs);
         }
 
-        public void SetInputs(params int[] inputs)
+        public void SetInputs(params long[] inputs)
         {
             _inputs.Clear();
             inputs.ToList().ForEach(x => _inputs.Enqueue(x));
         }
 
-        public int Execute(List<int> codes)
+        public long Execute(IEnumerable<int> codes) => Execute(codes.Select(x => (long)x));
+
+        public long Execute(IEnumerable<long> codes)
         {
-            _codes = codes.ToList();
-            if (!_codes.Any())
+            if (!codes.Any())
                 return int.MinValue;
+
+            _codes = new long[MemorySize];
+            Array.Copy(codes.ToArray(), _codes, codes.Count());
             Reset();
 
             return Execute();
         }
 
-        int Execute()
+        long Execute()
         {
             bool canStep;
 
@@ -73,6 +85,9 @@ namespace AdventOfCode.Dependencies.IntCode
                     case IntCodeOperator.Equals:
                         Compare(operation);
                         break;
+                    case IntCodeOperator.ShiftBase:
+                        ShiftBase(operation);
+                        break;
                     default:
                         throw new Exception("Unrecognizable opcode.");
                 }
@@ -80,44 +95,75 @@ namespace AdventOfCode.Dependencies.IntCode
                 if (!IsPaused && canStep) _address += GetOffset(operation.Operator);
             }
 
-            return IsPaused ? int.MinValue : _codes[0];
+            return IsPaused ? 0 : _codes[0];
         }
 
-        public int Resume()
+        public long Resume()
         {
             if (!IsPaused) return int.MinValue;
             IsPaused = false;
             return Execute();
         }
 
+        long GetMemory(IntCodeParamMode paramMode, long address)
+        {
+            long value;
+
+            switch (paramMode)
+            {
+                default:
+                case IntCodeParamMode.Position:
+                    value = _codes[address];
+                    value = _codes[value];
+                    break;
+                case IntCodeParamMode.Immediate:
+                    value = _codes[address];
+                    break;
+                case IntCodeParamMode.Relative:
+                    value = _codes[address];
+                    value = _codes[_base + value];
+                    break;
+            };
+
+            return value;
+        }
+
+        void SetMemory(IntCodeParamMode paramMode, long address, long value)
+        {
+            long realAddr;
+
+            switch (paramMode)
+            {
+                default:
+                case IntCodeParamMode.Position:
+                    realAddr = _codes[address];
+                    _codes[realAddr] = value;
+                    break;
+                case IntCodeParamMode.Immediate:
+                    _codes[address] = value;
+                    break;
+                case IntCodeParamMode.Relative:
+                    realAddr = _codes[address];
+                    _codes[_base + realAddr] = value;
+                    break;
+            };
+        }
+
         void Calculate(IntCodeOperation operation)
         {
-            var op1 = _codes[_address + 1];
-            var op2 = _codes[_address + 2];
-
-            if (operation.ParameterA == IntCodeParamMode.Position) op1 = _codes[op1];
-            if (operation.ParameterB == IntCodeParamMode.Position) op2 = _codes[op2];
-
+            var op1 = GetMemory(operation.ParameterA, _address + 1);
+            var op2 = GetMemory(operation.ParameterB, _address + 2);
             var result = operation.Operator == IntCodeOperator.Multiply ? op1 * op2 : op1 + op2;
-
-            if (operation.ParameterC == IntCodeParamMode.Position)
-                _codes[_codes[_address + 3]] = result;
-            else _codes[_address + 3] = result;
+            SetMemory(operation.ParameterC, _address + 3, result);
         }
 
         void HandleResponse(IntCodeOperation operation)
         {
-            var memAddr = _codes[_address + 1];
-            if (operation.ParameterA == IntCodeParamMode.Position) memAddr = _codes[memAddr];
-            var memAddrHex = memAddr.ToString("X").PadLeft(8, '0');
-
             if (operation.Operator == IntCodeOperator.Input)
             {
                 if (_inputs.Any())
                 {
-                    if (operation.ParameterA == IntCodeParamMode.Position)
-                        _codes[_codes[_address + 1]] = _inputs.Dequeue();
-                    else _codes[_address + 1] = _inputs.Dequeue();
+                    SetMemory(operation.ParameterA, _address + 1, _inputs.Dequeue());
                 }
                 else
                 {
@@ -127,19 +173,17 @@ namespace AdventOfCode.Dependencies.IntCode
             }
             else
             {
-                Output = memAddr;
+                var output = GetMemory(operation.ParameterA, _address + 1);
+                _outputs.Add(output);
             }
         }
 
         bool GotoCheck(IntCodeOperation operation)
         {
-            var op = _codes[_address + 1];
-            var nextAddr = _codes[_address + 2];
-
-            if (operation.ParameterA == IntCodeParamMode.Position) op = _codes[op];
-            if (operation.ParameterB == IntCodeParamMode.Position) nextAddr = _codes[nextAddr];
-
+            var op = GetMemory(operation.ParameterA, _address + 1);
+            var nextAddr = GetMemory(operation.ParameterB, _address + 2);
             var canJump = operation.Operator == IntCodeOperator.JumpIfFalse ? op == 0 : op != 0;
+
             if (canJump)
             {
                 _address = nextAddr;
@@ -151,28 +195,27 @@ namespace AdventOfCode.Dependencies.IntCode
 
         void Compare(IntCodeOperation operation)
         {
-            var op1 = _codes[_address + 1];
-            var op2 = _codes[_address + 2];
+            var op1 = GetMemory(operation.ParameterA, _address + 1);
+            var op2 = GetMemory(operation.ParameterB, _address + 2);
+            var result = Convert.ToInt32(operation.Operator == IntCodeOperator.LessThan ? op1 < op2 : op1 == op2);
+            SetMemory(operation.ParameterC, _address + 3, result);
+        }
 
-            if (operation.ParameterA == IntCodeParamMode.Position) op1 = _codes[op1];
-            if (operation.ParameterB == IntCodeParamMode.Position) op2 = _codes[op2];
-
-            var result = operation.Operator == IntCodeOperator.LessThan ? op1 < op2 : op1 == op2;
-            var resultAsNum = Convert.ToInt32(result);
-
-            if (operation.ParameterC == IntCodeParamMode.Position)
-                _codes[_codes[_address + 3]] = resultAsNum;
-            else _codes[_address + 3] = resultAsNum;
+        void ShiftBase(IntCodeOperation operation)
+        {
+            var op = GetMemory(operation.ParameterA, _address + 1);
+            _base += op;
         }
 
         void Reset()
         {
             _address = 0;
-            Output = 0;
+            _base = 0;
+            _outputs.Clear();
             IsPaused = false;
         }
 
-        IntCodeOperation ReadOpCode(int opCode)
+        IntCodeOperation ReadOpCode(long opCode)
         {
             var parser = new int[4];
             var opCodeStr = opCode.ToString().PadLeft(5, '0');
@@ -209,6 +252,7 @@ namespace AdventOfCode.Dependencies.IntCode
                     return 3;
                 case IntCodeOperator.Input:
                 case IntCodeOperator.Output:
+                case IntCodeOperator.ShiftBase:
                     return 2;
                 default:
                     return 1;
@@ -250,12 +294,14 @@ namespace AdventOfCode.Dependencies.IntCode
         JumpIfFalse = 6,
         LessThan = 7,
         Equals = 8,
+        ShiftBase = 9,
         Exit = 99
     }
 
     public enum IntCodeParamMode
     {
         Position = 0,
-        Immediate = 1
+        Immediate = 1,
+        Relative = 2
     }
 }

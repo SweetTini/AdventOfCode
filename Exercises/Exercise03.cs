@@ -19,18 +19,18 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var points = FindIntersections(VectorSets[0], VectorSets[1]);
             var result = points.Min(x => (int)Vector.ManhattanDistance(x));
-            return result;
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var points = FindIntersections(VectorSets[0], VectorSets[1]);
             var result = points.Min(x => GetSteps(x, VectorSets[0]) + GetSteps(x, VectorSets[1]));
-            return result;
+            return result.ToString();
         }
 
         List<Vector> GetVectors(string input)

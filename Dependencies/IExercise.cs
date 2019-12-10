@@ -4,8 +4,8 @@
     {
         string FileName { get; }
 
-        int ProblemOne();
+        string ProblemOne();
 
-        int ProblemTwo();
+        string ProblemTwo();
     }
 }

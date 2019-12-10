@@ -15,19 +15,19 @@ namespace AdventOfCode.Exercises
             .Select(x => int.Parse(x.ToString()))
             .ToList();
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var image = GetImage(ColorBits, 25, 6);
             var layer = image.OrderBy(x => x.Count(y => y == 0)).First();
             var result = layer.Count(x => x == 1) * layer.Count(x => x == 2);
-            return result;
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var image = GetImage(ColorBits, 25, 6);
             DrawImage(image, 25, 6);
-            return 0;
+            return "See above.";
         }
 
         List<int[]> GetImage(List<int> bits, int width, int height)

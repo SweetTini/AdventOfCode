@@ -7,9 +7,9 @@ namespace AdventOfCode
     {
         static void Main(string[] args)
         {
-            var exercise = new Exercise08();
+            var exercise = new Exercise09();
 
-            Console.WriteLine("EXERCISE #8:");
+            Console.WriteLine("EXERCISE #9:");
             Console.WriteLine($"Problem #1 = {exercise.ProblemOne()}");
             Console.WriteLine($"Problem #2 = {exercise.ProblemTwo()}");
             Console.WriteLine("\nPress ENTER to exit console.");

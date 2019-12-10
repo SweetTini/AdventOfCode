@@ -19,17 +19,17 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var result = 0;
 
             foreach (var mass in Masses)
                 result += (mass / 3) - 2;
 
-            return result;
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var result = 0;
 
@@ -47,7 +47,7 @@ namespace AdventOfCode.Exercises
                 result += maxFuel;
             }
 
-            return result;
+            return result.ToString();
         }
     }
 }

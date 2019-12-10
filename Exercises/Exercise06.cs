@@ -19,18 +19,20 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var orbits = GetOrbits(OrbitMappings);
-            return orbits.Sum(x => x.Count);
+            var result = orbits.Sum(x => x.Count);
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var orbits = GetOrbits(OrbitMappings);
             var you = orbits.First(x => x.Identity == "YOU");
             var santa = orbits.First(x => x.Identity == "SAN");
-            return you.Search(santa);
+            var result = you.Search(santa);
+            return result.ToString();
         }
 
         HashSet<Orbit> GetOrbits(List<string> mappings)

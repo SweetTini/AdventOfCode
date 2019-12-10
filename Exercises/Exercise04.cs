@@ -18,7 +18,7 @@ namespace AdventOfCode.Exercises
         {
         }
 
-        public override int ProblemOne()
+        public override string ProblemOne()
         {
             var result = 0;
             var rules = SetUpRules(IsValidPassword, HasPairs, IsEachDigitIncreasing);
@@ -27,10 +27,10 @@ namespace AdventOfCode.Exercises
                 if (rules.All(x => x.Invoke(i.ToString())))
                     result++;
 
-            return result;
+            return result.ToString();
         }
 
-        public override int ProblemTwo()
+        public override string ProblemTwo()
         {
             var result = 0;
             var rules = SetUpRules(IsValidPassword, HasAdjacentPair, IsEachDigitIncreasing);
@@ -39,7 +39,7 @@ namespace AdventOfCode.Exercises
                 if (rules.All(x => x.Invoke(i.ToString())))
                     result++;
 
-            return result;
+            return result.ToString();
         }
 
         List<Func<string, bool>> SetUpRules(params Func<string, bool>[] rules)

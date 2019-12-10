@@ -15,9 +15,9 @@ namespace AdventOfCode.Dependencies
             LoadInputs();
         }
 
-        public abstract int ProblemOne();
+        public abstract string ProblemOne();
 
-        public abstract int ProblemTwo();
+        public abstract string ProblemTwo();
 
         void LoadInputs()
         {
