@@ -16,7 +16,7 @@ namespace AdventOfCode.Exercises
 
         public override string ProblemOne()
         {
-            var test = new IntCode(65536);
+            var test = new IntCode();
             test.SetInputs(1);
             test.Execute(Instructions);
 
@@ -26,7 +26,7 @@ namespace AdventOfCode.Exercises
 
         public override string ProblemTwo()
         {
-            var test = new IntCode(65536);
+            var test = new IntCode();
             test.SetInputs(2);
             test.Execute(Instructions);
 
