@@ -28,7 +28,11 @@ namespace AdventOfCode.Dependencies
 
         public static float Det(Vector a, Vector b) => a.X * b.Y - a.Y * b.X;
 
-        public static float ManhattanDistance(Vector a) => ManhattanDistance(Vector.Zero, a);
+        public static float Angle(Vector a, Vector b) => (float)(Math.Atan2(a.Y - b.Y, a.X - b.X) * 180.0 / Math.PI) + 180f;
+
+        public static float DistanceSquared(Vector a, Vector b) => (b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y);
+
+        public static float ManhattanDistance(Vector a) => ManhattanDistance(Zero, a);
 
         public static float ManhattanDistance(Vector a, Vector b) => Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
 
