@@ -17,7 +17,7 @@ namespace AdventOfCode.Exercises
             var robot = new EmergencyHullPaintingRobot(128, 128);
             robot.Execute(Instructions);
             var result = robot.Steps;
-            return $"Steps={result}";
+            return $"{result}";
         }
 
         public override string ProblemTwo()
