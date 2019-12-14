@@ -105,6 +105,11 @@ namespace AdventOfCode.Dependencies.IntCode
             return Execute();
         }
 
+        public void ClearOutput()
+        {
+            _outputs.Clear();
+        }
+
         long GetMemory(IntCodeParamMode paramMode, long address)
         {
             long value;
