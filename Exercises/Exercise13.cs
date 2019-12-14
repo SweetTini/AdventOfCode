@@ -59,20 +59,19 @@ namespace AdventOfCode.Exercises
                 else intCode.Execute(instructions);
 
                 var tiles = GetTiles(intCode.Outputs.ToList());
+                intCode.ClearOutput();
+
                 var paddle = (Tile?)tiles.FirstOrDefault(x => x.TileType == TileType.Paddle);
                 var ball = (Tile?)tiles.FirstOrDefault(x => x.TileType == TileType.Ball);
                 var scoreInfo = (Tile?)tiles.FirstOrDefault(x => x.IsScore);
-
-                if (scoreInfo.HasValue)
-                    score = scoreInfo.Value.Score;
-
-                intCode.ClearOutput();
+                if (scoreInfo.HasValue) score = scoreInfo.Value.Score;
 
                 if (!intCode.IsPaused) break;
 
-                if (paddle.HasValue && ball.HasValue)
-                    intCode.SetInputs(GetInput(paddle.Value, ball.Value));
-                else intCode.SetInputs(0);
+                var nextInput = paddle.HasValue && ball.HasValue
+                    ? GetInput(paddle.Value, ball.Value) : 0;
+
+                intCode.SetInputs(nextInput);
             }
 
             return score;
