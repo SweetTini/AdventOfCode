@@ -60,6 +60,7 @@
     <Compile Include="Exercises\Exercise12.cs" />
     <Compile Include="Exercises\Exercise13.cs" />
     <Compile Include="Exercises\Exercise14.cs" />
+    <Compile Include="Exercises\Exercise15.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -107,6 +108,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Inputs\Exercise14.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Inputs\Exercise15.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

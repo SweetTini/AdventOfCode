@@ -72,15 +72,14 @@ namespace AdventOfCode.Exercises
             var scale = (long)Math.Ceiling(1f * amount / reaction.Quantity);
             if (reaction.Quantity * scale > amount)
             {
-                var surplusAmount = (reaction.Quantity * scale) - amount;
-                if (!surplus.ContainsKey(name)) surplus.Add(name, surplusAmount);
-                else surplus[name] += surplusAmount;
+                var leftover = (reaction.Quantity * scale) - amount;
+                if (!surplus.ContainsKey(name)) surplus.Add(name, leftover);
+                else surplus[name] += leftover;
             }
 
             return reaction.Requirements
                 .Select(x => GetMaterial(reactions, surplus, x.Name, x.Quantity * scale))
                 .SelectMany(x => x)
-                .OrderBy(x => x.Name)
                 .ToList();
         }
 
@@ -113,13 +112,13 @@ namespace AdventOfCode.Exercises
                     .Select(x => new Material(x[1], int.Parse(x[0])))
                     .ToList();
 
-                var outputs = new Material(
+                var output = new Material(
                     breakdown[1].Split(' ')[1],
                     int.Parse(breakdown[1].Split(' ')[0]));
 
                 reactions.Add(new Reaction()
                 {
-                    Output = outputs,
+                    Output = output,
                     Requirements = requirements
                 });
             }
